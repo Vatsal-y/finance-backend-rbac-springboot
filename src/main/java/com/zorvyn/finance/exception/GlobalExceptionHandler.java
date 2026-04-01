@@ -1,6 +1,7 @@
 package com.zorvyn.finance.exception;
 
 import com.zorvyn.finance.dto.ErrorResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,11 +15,13 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
+        log.warn("Resource not found: {}", ex.getMessage());
         ErrorResponse error = ErrorResponse.builder()
                 .message(ex.getMessage())
                 .status(HttpStatus.NOT_FOUND.value())
@@ -29,6 +32,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateResource(DuplicateResourceException ex) {
+        log.warn("Duplicate resource: {}", ex.getMessage());
         ErrorResponse error = ErrorResponse.builder()
                 .message(ex.getMessage())
                 .status(HttpStatus.CONFLICT.value())
@@ -39,6 +43,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorized(UnauthorizedException ex) {
+        log.warn("Unauthorized access: {}", ex.getMessage());
         ErrorResponse error = ErrorResponse.builder()
                 .message(ex.getMessage())
                 .status(HttpStatus.UNAUTHORIZED.value())
@@ -59,6 +64,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
+        log.warn("Access denied: {}", ex.getMessage());
         ErrorResponse error = ErrorResponse.builder()
                 .message("You do not have permission to perform this action")
                 .status(HttpStatus.FORBIDDEN.value())
@@ -73,6 +79,7 @@ public class GlobalExceptionHandler {
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
         }
+        log.warn("Validation failed: {}", fieldErrors);
         ErrorResponse error = ErrorResponse.builder()
                 .message("Validation failed")
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -84,6 +91,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        log.warn("Bad request: {}", ex.getMessage());
         ErrorResponse error = ErrorResponse.builder()
                 .message(ex.getMessage())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -94,6 +102,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+        log.error("Unexpected error occurred", ex);
         ErrorResponse error = ErrorResponse.builder()
                 .message("An unexpected error occurred")
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())

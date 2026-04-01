@@ -1,17 +1,25 @@
 package com.zorvyn.finance.service;
 
-import com.zorvyn.finance.dto.*;
+import com.zorvyn.finance.dto.CategoryBreakdown;
+import com.zorvyn.finance.dto.DashboardSummary;
+import com.zorvyn.finance.dto.MonthlyTrend;
+import com.zorvyn.finance.dto.RecordResponse;
 import com.zorvyn.finance.model.FinancialRecord;
 import com.zorvyn.finance.model.TransactionType;
 import com.zorvyn.finance.repository.FinancialRecordRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DashboardService {
 
     private final FinancialRecordRepository recordRepository;
@@ -19,6 +27,9 @@ public class DashboardService {
     public DashboardSummary getSummary() {
         Double totalIncome = recordRepository.sumByType(TransactionType.INCOME);
         Double totalExpense = recordRepository.sumByType(TransactionType.EXPENSE);
+
+        log.info("Dashboard summary requested — income: {}, expense: {}, net: {}",
+                totalIncome, totalExpense, totalIncome - totalExpense);
 
         return DashboardSummary.builder()
                 .totalIncome(totalIncome)
@@ -29,6 +40,7 @@ public class DashboardService {
 
     public List<CategoryBreakdown> getCategoryBreakdown() {
         List<Object[]> results = recordRepository.getCategoryBreakdown();
+        log.info("Category breakdown requested — {} categories found", results.size());
         return results.stream()
                 .map(row -> CategoryBreakdown.builder()
                         .category((String) row[0])
@@ -40,6 +52,7 @@ public class DashboardService {
 
     public List<RecordResponse> getRecentTransactions() {
         List<FinancialRecord> records = recordRepository.findTop10ByOrderByCreatedAtDesc();
+        log.info("Recent transactions requested — {} records returned", records.size());
         return records.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -75,6 +88,7 @@ public class DashboardService {
             trend.setNetBalance(trend.getTotalIncome() - trend.getTotalExpense());
         }
 
+        log.info("Monthly trend requested — {} months of data", trendMap.size());
         return new ArrayList<>(trendMap.values());
     }
 

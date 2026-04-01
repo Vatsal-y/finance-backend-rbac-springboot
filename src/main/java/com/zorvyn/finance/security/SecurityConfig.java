@@ -41,6 +41,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
 
                         // User management — ADMIN only
                         .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN")

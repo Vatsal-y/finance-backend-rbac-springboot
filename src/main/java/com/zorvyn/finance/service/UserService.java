@@ -8,6 +8,7 @@ import com.zorvyn.finance.exception.ResourceNotFoundException;
 import com.zorvyn.finance.model.User;
 import com.zorvyn.finance.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -38,6 +40,7 @@ public class UserService {
                 .build();
 
         User saved = userRepository.save(user);
+        log.info("User {} created with role {}", saved.getEmail(), saved.getRole());
         return mapToResponse(saved);
     }
 
@@ -60,6 +63,7 @@ public class UserService {
 
         user.setActive(request.getActive());
         User saved = userRepository.save(user);
+        log.info("User {} status updated to active={}", saved.getEmail(), saved.isActive());
         return mapToResponse(saved);
     }
 

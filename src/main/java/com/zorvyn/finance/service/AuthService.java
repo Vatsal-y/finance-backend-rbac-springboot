@@ -9,6 +9,7 @@ import com.zorvyn.finance.model.User;
 import com.zorvyn.finance.repository.UserRepository;
 import com.zorvyn.finance.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -28,6 +30,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
+            log.warn("Registration attempt with existing email: {}", request.getEmail());
             throw new DuplicateResourceException("Email already registered: " + request.getEmail());
         }
 
@@ -40,6 +43,7 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+        log.info("User {} registered successfully with role {}", user.getEmail(), user.getRole());
 
         // Auto-login after registration
         Authentication auth = authenticationManager.authenticate(
@@ -67,6 +71,8 @@ public class AuthService {
             User user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
 
+            log.info("User {} logged in successfully", user.getEmail());
+
             return AuthResponse.builder()
                     .token(token)
                     .email(user.getEmail())
@@ -74,6 +80,7 @@ public class AuthService {
                     .role(user.getRole().name())
                     .build();
         } catch (BadCredentialsException e) {
+            log.warn("Failed login attempt for email: {}", request.getEmail());
             throw new BadCredentialsException("Invalid email or password");
         }
     }

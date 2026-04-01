@@ -9,6 +9,7 @@ import com.zorvyn.finance.model.User;
 import com.zorvyn.finance.repository.FinancialRecordRepository;
 import com.zorvyn.finance.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FinancialRecordService {
 
     private final FinancialRecordRepository recordRepository;
@@ -40,6 +42,8 @@ public class FinancialRecordService {
                 .build();
 
         FinancialRecord saved = recordRepository.save(record);
+        log.info("Record {} created by user {} — {} {} in category '{}'",
+                saved.getId(), currentUser.getEmail(), saved.getType(), saved.getAmount(), saved.getCategory());
         return mapToResponse(saved);
     }
 
@@ -69,6 +73,7 @@ public class FinancialRecordService {
         record.setNote(request.getNote());
 
         FinancialRecord saved = recordRepository.save(record);
+        log.info("Record {} updated by user {}", saved.getId(), getCurrentUser().getEmail());
         return mapToResponse(saved);
     }
 
@@ -78,6 +83,7 @@ public class FinancialRecordService {
             throw new ResourceNotFoundException("Financial record not found with id: " + id);
         }
         recordRepository.deleteById(id);
+        log.info("Record {} deleted by user {}", id, getCurrentUser().getEmail());
     }
 
     private User getCurrentUser() {
