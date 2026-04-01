@@ -7,12 +7,14 @@ A production-grade Spring Boot backend for a fintech dashboard with role-based a
 - [Overview](#overview)
 - [Why This Design](#why-this-design)
 - [Architecture & Request Flow](#architecture--request-flow)
+- [Data Modeling Decisions](#data-modeling-decisions)
 - [Tech Stack](#tech-stack)
 - [Setup Instructions](#setup-instructions)
 - [API Documentation](#api-documentation)
 - [Access Control Strategy](#access-control-strategy)
 - [Seeded Test Data](#seeded-test-data)
 - [Security Considerations](#security-considerations)
+- [Observability](#observability)
 - [Failure Handling Strategy](#failure-handling-strategy)
 - [Trade-offs](#trade-offs)
 - [Scalability Considerations](#scalability-considerations)
@@ -124,6 +126,17 @@ com.zorvyn.finance
 
 ---
 
+## Data Modeling Decisions
+
+A relational database was chosen to ensure structured financial data storage and transactional consistency.
+
+- A **Many-to-One** relationship is used between `FinancialRecord` and `User` to represent ownership of records — every financial record is traceable to the user who created it
+- **Enums** (`TransactionType`, `Role`) are persisted as strings via `@Enumerated(EnumType.STRING)` to enforce domain constraints at both the application and database level
+- **UUIDs** are used as primary keys instead of auto-incrementing integers to ensure global uniqueness and support distributed system scalability
+- **`@CreationTimestamp`** is used on both entities for automatic audit trails without requiring manual timestamp management
+
+---
+
 ## Tech Stack
 
 | Technology | Purpose |
@@ -201,9 +214,11 @@ mvn spring-boot:run -Dspring-boot.run.profiles=postgres
 
 ## API Documentation
 
+All API responses follow a consistent structure using a standardized `ApiResponse<T>` wrapper, ensuring uniform handling across all clients.
+
 ### API Response Format
 
-All successful responses follow a consistent structure:
+Successful responses:
 
 ```json
 {
@@ -386,6 +401,19 @@ On startup, the database is automatically seeded with:
 - Passwords are hashed with **BCrypt** (adaptive hashing with salt)
 - Deactivated users cannot authenticate — `CustomUserDetailsService` checks `active` status
 - Duplicate email registration returns `409 Conflict` without leaking user information
+
+---
+
+## Observability
+
+Structured logging is implemented across all critical system flows to support debugging, monitoring, and operational awareness:
+
+- **Authentication events** — login success, registration, failed login attempts (`WARN`)
+- **Financial record operations** — creation, update, and deletion with user and record context
+- **Dashboard requests** — analytics queries with result set sizes
+- **Exception handling** — `WARN` for client errors (400/404/409), `ERROR` for unexpected server failures with full stack traces
+
+All logging uses SLF4J via Lombok's `@Slf4j` with parameterized messages to avoid string concatenation overhead. This provides a foundation for integration with centralized logging tools (ELK, CloudWatch, etc.) in production.
 
 ---
 
