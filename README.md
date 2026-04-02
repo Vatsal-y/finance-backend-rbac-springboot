@@ -203,50 +203,12 @@ Access the in-memory database at **http://localhost:8080/h2-console**:
 To run with PostgreSQL locally instead of H2:
 
 1. Ensure PostgreSQL is running with a database named `finance_db`
-2. Update `src/main/resources/application-postgres.properties` with your credentials (or export `SPRING_DATASOURCE_USERNAME`, etc.)
+2. Update `src/main/resources/application-postgres.properties` with your credentials
 3. Run with the postgres profile:
 
 ```bash
 mvn spring-boot:run -Dspring-boot.run.profiles=postgres
 ```
-
-### 🚀 Production Deployment (Render)
-
-This application is optimized for a zero-configuration, native Java Web Service deployment on [Render](https://render.com). No Dockerfile is required.
-
-**Step 1. Configure PostgreSQL on Render**
-1. Create a new **PostgreSQL** instance in the Render dashboard.
-2. Once provisioned, copy the **Internal Database URL**, **Username**, and **Password**.
-
-**Step 2. Create the Web Service**
-1. Create a new **Web Service** on Render and connect your GitHub repository.
-2. Set the Environment to **Java**.
-3. Set the **Build Command**:
-   ```bash
-   mvn clean install -DskipTests
-   ```
-4. Set the **Start Command**:
-   ```bash
-   java -jar target/*.jar
-   ```
-
-**Step 3. Configure Environment Variables**
-In your Web Service settings, add the following environment variables:
-
-| Key | Value | Description |
-|-----|-------|-------------|
-| `SPRING_PROFILES_ACTIVE` | `postgres` | Switches Spring Boot to the production PostgreSQL profile |
-| `SPRING_DATASOURCE_URL` | `<Internal Database URL>` | Paste the internal URL from step 1 |
-| `SPRING_DATASOURCE_USERNAME` | `<Username>` | Database username |
-| `SPRING_DATASOURCE_PASSWORD` | `<Password>` | Database password |
-| `SPRING_JPA_HIBERNATE_DDL_AUTO`| `update` | Automatically creates schemas on startup |
-| `JWT_SECRET` | `<your-secure-secret>` | A secure, Base64-encoded string for signing tokens |
-
-*Note: Render will automatically inject the `PORT` environment variable which the application binds to natively.*
-
-**Step 4. Deploy and Test**
-- Your application will now build. Once Live, it will be available at `https://<your-service>.onrender.com`.
-- Access Swagger at `https://<your-service>.onrender.com/swagger-ui.html`.
 
 ---
 
