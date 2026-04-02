@@ -166,7 +166,7 @@ A relational database was chosen to ensure structured financial data storage and
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/Vatsal-y/finance-backend-rbac-springboot
 cd finance-backend-rbac-springboot
 
 # Build and run
